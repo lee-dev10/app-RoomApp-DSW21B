@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -26,11 +27,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -79,7 +82,8 @@ fun TaskMainScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
@@ -101,7 +105,8 @@ fun TaskMainScreen(
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.DeleteSweep,
-                                    contentDescription = null
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
                                 )
                             }
                         )
@@ -127,11 +132,13 @@ fun TaskMainScreen(
             FloatingActionButton(
                 onClick = { viewModel.openCreateForm() },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Agregar nueva tarea"
+                    contentDescription = "Agregar nueva tarea",
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
@@ -147,7 +154,7 @@ fun TaskMainScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Search Bar
+            // Search Bar with rounded corners & purple accent
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
@@ -155,7 +162,8 @@ fun TaskMainScreen(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Buscar"
+                        contentDescription = "Buscar",
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 },
                 trailingIcon = {
@@ -169,16 +177,24 @@ fun TaskMainScreen(
                     }
                 },
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Status Filter Chips
             Text(
                 text = "Filtrar por Estado:",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             FlowRow(
@@ -187,21 +203,29 @@ fun TaskMainScreen(
             ) {
                 val statusFilters = listOf("TODAS") + TaskStatus.entries.map { it.label }
                 statusFilters.forEach { statusLabel ->
+                    val isSelected = uiState.selectedStatusFilter.equals(statusLabel, ignoreCase = true)
                     FilterChip(
-                        selected = uiState.selectedStatusFilter.equals(statusLabel, ignoreCase = true),
+                        selected = isSelected,
                         onClick = { viewModel.onStatusFilterChange(statusLabel) },
-                        label = { Text(statusLabel) }
+                        label = { Text(statusLabel) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Category Filter Chips
             Text(
                 text = "Filtrar por Categoría:",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(4.dp))
             FlowRow(
@@ -209,10 +233,17 @@ fun TaskMainScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 TaskCategory.entries.forEach { category ->
+                    val isSelected = uiState.selectedCategoryFilter == category.label
                     FilterChip(
-                        selected = uiState.selectedCategoryFilter == category.label,
+                        selected = isSelected,
                         onClick = { viewModel.onCategoryFilterChange(category.label) },
-                        label = { Text(category.label) }
+                        label = { Text(category.label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.secondary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSecondary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
             }
@@ -234,7 +265,7 @@ fun TaskMainScreen(
                             imageVector = Icons.Default.Task,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.outline
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
@@ -247,7 +278,7 @@ fun TaskMainScreen(
                                 "No tienes tareas registradas.\n¡Haz clic en + para agregar una!"
                             },
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.outline,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -259,9 +290,10 @@ fun TaskMainScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Tareas (${uiState.tasks.size})",
+                        text = "Lista de Tareas (${uiState.tasks.size})",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
